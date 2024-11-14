@@ -31,6 +31,6 @@ if (curl_errno($ch)) {
     echo 'Resposta da API: ' . $response;
 }
 
-// Fecha a sessão cURL
+// Fecha a sessão cURL 
 curl_close($ch);
 ?>
