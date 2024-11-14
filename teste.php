@@ -2,10 +2,12 @@
 
 $url = "http://localhost:11434/api/generate";
 
+$prompt = $_GET['prompt'];
+
 // Dados da requisição em JSON
 $data = [
     "model" => "tinyllama",
-    "prompt" => "Why is the sky blue?",
+    "prompt" => $prompt,
     "stream" => false
 ];
 
