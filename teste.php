@@ -1,3 +1,5 @@
 <?php
 
-echo "Ola mundo";
+$teste = 'aqui';
+
+echo "Ola mundo". " " . $teste;
