@@ -1,14 +1,13 @@
 <?php
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
-    $URL  = "http://localhost:11434/api/generate";
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $URL = "http://localhost:11434/api/generate";
     $MODELO = "tinyllama";
 
     $json_data = file_get_contents('php://input');
-    $data_decode = json_decode($json_data);
+    $data_decode = json_decode($json_data, true);
 
-    if (strlen($data_decode['prompt']) <= 0) {
+    if (empty($data_decode['prompt'])) {
         http_response_code(400);
         echo json_encode(["message" => "Bad Request: Prompt não pode estar vazio."]);
         exit;
@@ -32,30 +31,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         $response = curl_exec($ch);
 
+        // Verifica se ocorreu algum erro durante a execução da requisição
         if (curl_errno($ch)) {
             throw new Exception('Erro na requisição: ' . curl_error($ch));
         }
 
+        // Verifica o código de status HTTP da resposta
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if ($http_code !== 200) {
+            throw new Exception('HTTP code: ' . $http_code . '. Response: ' . $response);
+        }
+
         curl_close($ch);
 
+        // Retorna a resposta da API
         echo $response;
         http_response_code(200);
     } catch (Exception $e) {
-        $data = [
-            "message" => "Erro ao buscar dados.",
-            "detalhes" => $e->getMessage(),
-            "data" => [],
-        ];
-
-        echo json_encode($data);
         http_response_code(500);
+        echo json_encode([
+            "message" => "Erro ao buscar dados.",
+            "details" => $e->getMessage()
+        ]);
     }
 } else {
-    $data = [
-        "message" => "Método não permitido.",
-        "data" => []
-    ];
-
-    echo json_encode($data);
     http_response_code(405);
+    echo json_encode([
+        "message" => "Método não permitido."
+    ]);
 }
