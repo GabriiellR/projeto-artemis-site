@@ -7,6 +7,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $prompt = $_POST['prompt'];
 
+    if(!$prompt){
+        throw new Error("Bad Request");
+    }
     $data = [
         "model" => $MODELO,
         "prompt" => $prompt,
@@ -40,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             "data" => [],
         ];
 
-        json_encode($data);
+        echo json_encode($data);
         http_response_code(500);
     }
     
