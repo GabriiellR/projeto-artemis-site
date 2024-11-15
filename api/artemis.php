@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         "prompt" => $data_decode['prompt'],
         "stream" => false,
         "options:" => [
-            "temperature" => 2
+            "temperature" => 0.0
         ]
     ];
 
