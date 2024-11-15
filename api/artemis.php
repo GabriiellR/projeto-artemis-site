@@ -5,11 +5,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $URL  = "http://localhost:11434/api/generate";
     $MODELO = "tinyllama";
 
-    $prompt = $_POST['prompt'];
+    $prompt = $_POST['prompt'] ?? '';
 
-    // if (strlen($prompt) <= 0) {
-    //     throw new Error("Bad Request");
-    // }
+    if (strlen($prompt) <= 0) {
+        http_response_code(400);
+        echo json_encode(["message" => "Bad Request: Prompt não pode estar vazio."]);
+        exit;
+    }
 
     $data = [
         "model" => $MODELO,
@@ -18,8 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     ];
 
     try {
-
-        $ch = curl_init($url);
+        $ch = curl_init($URL);
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
@@ -31,15 +32,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $response = curl_exec($ch);
 
         if (curl_errno($ch)) {
-            throw new Error('Erro na requisição: ' . curl_error($ch));
+            throw new Exception('Erro na requisição: ' . curl_error($ch));
         }
 
-        echo json_encode($response);
+        curl_close($ch);
+
+        echo $response;
         http_response_code(200);
     } catch (Exception $e) {
         $data = [
             "message" => "Erro ao buscar dados.",
-            "detalhes" => $e,
+            "detalhes" => $e->getMessage(),
             "data" => [],
         ];
 
@@ -47,7 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         http_response_code(500);
     }
 } else {
-
     $data = [
         "message" => "Método não permitido.",
         "data" => []
