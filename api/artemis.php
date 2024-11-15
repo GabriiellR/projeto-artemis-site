@@ -7,9 +7,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $prompt = $_POST['prompt'];
 
-    if(!$prompt){
+    if (strlen($prompt) <= 0) {
         throw new Error("Bad Request");
     }
+
     $data = [
         "model" => $MODELO,
         "prompt" => $prompt,
@@ -31,22 +32,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if (curl_errno($ch)) {
             throw new Error('Erro na requisição: ' . curl_error($ch));
-        } 
+        }
 
         echo json_encode($response);
-        http_response_code(200);        
-
+        http_response_code(200);
     } catch (Exception $e) {
         $data = [
             "message" => "Erro ao buscar dados.",
-            "detalhes"=> $e,
+            "detalhes" => $e,
             "data" => [],
         ];
 
         echo json_encode($data);
         http_response_code(500);
     }
-    
 } else {
 
     $data = [
