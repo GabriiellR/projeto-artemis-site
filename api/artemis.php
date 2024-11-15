@@ -16,7 +16,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = [
         "model" => $MODELO,
         "prompt" => $data_decode['prompt'],
-        "stream" => false
+        "stream" => false,
+        "options:" => [
+            "temperature" => 1.5
+        ]
     ];
 
     try {
