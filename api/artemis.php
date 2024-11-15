@@ -7,9 +7,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $prompt = $_POST['prompt'];
 
-    if (strlen($prompt) <= 0) {
-        throw new Error("Bad Request");
-    }
+    // if (strlen($prompt) <= 0) {
+    //     throw new Error("Bad Request");
+    // }
 
     $data = [
         "model" => $MODELO,
