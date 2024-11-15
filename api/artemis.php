@@ -17,9 +17,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         "model" => $MODELO,
         "prompt" => $data_decode['prompt'],
         "stream" => false,
-        "options:" => [
-            "temperature" => 0.0
-        ]
     ];
 
     try {
