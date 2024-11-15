@@ -5,9 +5,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $URL  = "http://localhost:11434/api/generate";
     $MODELO = "tinyllama";
 
-    $prompt = $_POST['prompt'] ?? '';
+    $json_data = file_get_contents('php://input');
+    $data_decode = json_decode($json_data);
 
-    if (strlen($prompt) <= 0) {
+    if (strlen($data_decode['prompt']) <= 0) {
         http_response_code(400);
         echo json_encode(["message" => "Bad Request: Prompt não pode estar vazio."]);
         exit;
@@ -15,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $data = [
         "model" => $MODELO,
-        "prompt" => $prompt,
+        "prompt" => $data_decode['prompt'],
         "stream" => false
     ];
 
