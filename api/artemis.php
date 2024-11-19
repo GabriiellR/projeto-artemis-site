@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         foreach($response as $res){
             $teste = res['response'];
         }
-        echo $teste;
+        echo json_encode($teste);
         http_response_code(200);
     } catch (Exception $e) {
         http_response_code(500);
