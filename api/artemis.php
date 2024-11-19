@@ -43,9 +43,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         curl_close($ch);
-
-        // Retorna a resposta da API
-        echo $response["response"];
+        $teste = [];
+        foreach($response as $res){
+            $teste = res['response'];
+        }
+        echo $teste;
         http_response_code(200);
     } catch (Exception $e) {
         http_response_code(500);
