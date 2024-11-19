@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Verifica se a chave 'response' existe na resposta e a exibe
         if (isset($response_decode['response'])) {
-            echo json_encode($response_decode['response']);
+            echo $response_decode['response'];
             http_response_code(200);
         } else {
             throw new Exception("Chave 'response' não encontrada na resposta.");
