@@ -44,11 +44,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         curl_close($ch);
         
-        foreach($response as $res){
-            $teste = res['response'];
+        // Decodifica a resposta JSON da API
+        $response_decode = json_decode($response, true);
+
+        // Verifica se a chave 'response' existe na resposta e a exibe
+        if (isset($response_decode['response'])) {
+            echo json_encode($response_decode['response']);
+            http_response_code(200);
+        } else {
+            throw new Exception("Chave 'response' não encontrada na resposta.");
         }
-        echo json_encode($teste);
-        http_response_code(200);
+
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode([
