@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         curl_close($ch);
-        $teste = [];
+        
         foreach($response as $res){
             $teste = res['response'];
         }
