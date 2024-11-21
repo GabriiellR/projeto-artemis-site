@@ -13,114 +13,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Limite de caracteres (ajuste conforme necessário)
-    $MAX_LENGTH = 1100;
-    $prompt = $data_decode['prompt'];
-    if (strlen($prompt) > $MAX_LENGTH) {
-        // Divida o texto em pedaços menores se exceder o limite
-        $chunks = str_split($prompt, $MAX_LENGTH);
+    $data = [
+        "model" => $MODELO,
+        "prompt" => $data_decode['prompt'],
+        "stream" => false,
+    ];
 
-        $responses = [];
-        foreach ($chunks as $chunk) {
-            $data = [
-                "model" => $MODELO,
-                "prompt" => $chunk,
-                "stream" => false,
-            ];
+    try {
+        $ch = curl_init($URL);
 
-            try {
-                $ch = curl_init($URL);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_POST, true);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                    'Content-Type: application/json'
-                ]);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json'
+        ]);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
 
-                $response = curl_exec($ch);
+        $response = curl_exec($ch);
 
-                if (curl_errno($ch)) {
-                    throw new Exception('Erro na requisição: ' . curl_error($ch));
-                }
-
-                $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                if ($http_code !== 200) {
-                    throw new Exception('HTTP code: ' . $http_code . '. Response: ' . $response);
-                }
-
-                curl_close($ch);
-                
-                // Decodifica a resposta JSON da API
-                $response_decode = json_decode($response, true);
-
-                if (isset($response_decode['response'])) {
-                    $responses[] = $response_decode['response'];
-                } else {
-                    throw new Exception("Chave 'response' não encontrada na resposta.");
-                }
-
-            } catch (Exception $e) {
-                http_response_code(500);
-                echo json_encode([
-                    "message" => "Erro ao buscar dados.",
-                    "details" => $e->getMessage()
-                ]);
-                exit;
-            }
+        // Verifica se ocorreu algum erro durante a execução da requisição
+        if (curl_errno($ch)) {
+            throw new Exception('Erro na requisição: ' . curl_error($ch));
         }
-        // Retorna todas as respostas concatenadas
-        echo implode(" ", $responses);
-        http_response_code(200);
-    } else {
-        // Caso o tamanho não ultrapasse o limite, executa normalmente
-        $data = [
-            "model" => $MODELO,
-            "prompt" => $prompt,
-            "stream" => false,
-        ];
 
-        try {
-            $ch = curl_init($URL);
-
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Content-Type: application/json'
-            ]);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-
-            $response = curl_exec($ch);
-
-            if (curl_errno($ch)) {
-                throw new Exception('Erro na requisição: ' . curl_error($ch));
-            }
-
-            $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            if ($http_code !== 200) {
-                throw new Exception('HTTP code: ' . $http_code . '. Response: ' . $response);
-            }
-
-            curl_close($ch);
-            
-            // Decodifica a resposta JSON da API
-            $response_decode = json_decode($response, true);
-
-            if (isset($response_decode['response'])) {
-                echo $response_decode['response'];
-                http_response_code(200);
-            } else {
-                throw new Exception("Chave 'response' não encontrada na resposta.");
-            }
-
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode([
-                "message" => "Erro ao buscar dados.",
-                "details" => $e->getMessage()
-            ]);
+        // Verifica o código de status HTTP da resposta
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if ($http_code !== 200) {
+            throw new Exception('HTTP code: ' . $http_code . '. Response: ' . $response);
         }
+
+        curl_close($ch);
+        
+        // Decodifica a resposta JSON da API
+        $response_decode = json_decode($response, true);
+
+        // Verifica se a chave 'response' existe na resposta
+        if (isset($response_decode['response'])) {
+            $responseText = $response_decode['response'];
+
+            // Limita o tamanho da resposta a 1000 caracteres
+            if (strlen($responseText) > 1000) {
+                $responseText = substr($responseText, 0, 1000);
+            }
+
+            echo $responseText;
+            http_response_code(200);
+        } else {
+            throw new Exception("Chave 'response' não encontrada na resposta.");
+        }
+
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode([
+            "message" => "Erro ao buscar dados.",
+            "details" => $e->getMessage()
+        ]);
     }
-
 } else {
     http_response_code(405);
     echo json_encode([
