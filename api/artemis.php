@@ -13,15 +13,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    $cache_key = md5($data_decode['prompt']);
+    $cached_response = apcu_fetch($cache_key);
+
+    if ($cached_response) {
+        echo $cached_response;
+        http_response_code(200);
+        exit;
+    }
+
     $data = [
         "model" => $MODELO,
         "prompt" => $data_decode['prompt'],
-        "stream" => false,
+        "stream" => true, // Ativa o streaming para grandes respostas
     ];
 
     try {
         $ch = curl_init($URL);
-
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
@@ -29,31 +37,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
 
+        // Habilita o streaming
+        curl_setopt($ch, CURLOPT_WRITEFUNCTION, function($ch, $data) {
+            echo $data; // Envia os dados assim que chegam
+            flush(); // Garante que os dados sejam enviados para o cliente imediatamente
+            return strlen($data); // Continua a escrita
+        });
+
         $response = curl_exec($ch);
 
-        // Verifica se ocorreu algum erro durante a execução da requisição
         if (curl_errno($ch)) {
             throw new Exception('Erro na requisição: ' . curl_error($ch));
         }
 
-        // Verifica o código de status HTTP da resposta
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($http_code !== 200) {
-            throw new Exception('HTTP code: ' . $http_code . '. Response: ' . $response);
-        }
-
         curl_close($ch);
-        
-        // Decodifica a resposta JSON da API
-        $response_decode = json_decode($response, true);
 
-        // Verifica se a chave 'response' existe na resposta e a exibe
-        if (isset($response_decode['response'])) {
-            echo $response_decode['response'];
-            http_response_code(200);
-        } else {
-            throw new Exception("Chave 'response' não encontrada na resposta.");
-        }
+        // Cache a resposta por 3600 segundos (1 hora)
+        apcu_store($cache_key, $response, 3600);
 
     } catch (Exception $e) {
         http_response_code(500);
