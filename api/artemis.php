@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'Content-Type: application/json'
             ],
             CURLOPT_POSTFIELDS => json_encode($data),
-            CURLOPT_TIMEOUT => 120,         // Timeout para evitar bloqueios prolongados
+            CURLOPT_TIMEOUT => 120,        // Timeout de 2 minutos
         ]);
 
         // Executa a requisição
@@ -56,9 +56,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Decodifica a resposta JSON
         $response_decode = json_decode($response, true);
 
-        // Verifica se a chave 'response' está presente e exibe
+        // Verifica se a chave 'response' está presente e a limita a 1200 caracteres
         if (isset($response_decode['response'])) {
-            echo $response_decode['response'];
+            $response_content = $response_decode['response'];
+            // Limita a resposta a 1200 caracteres
+            if (strlen($response_content) > 1200) {
+                $response_content = substr($response_content, 0, 1200) . '...'; // Trunca e adiciona "..."
+            }
+
+            // Retorna a resposta em formato JSON
+            echo json_encode([
+                "status" => "success",
+                "response" => $response_content
+            ]);
             http_response_code(200);
         } else {
             throw new Exception("Chave 'response' não encontrada na resposta.");
@@ -66,16 +76,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } catch (Exception $e) {
         // Caso ocorra qualquer erro, envia resposta de erro
-        http_response_code(500);
         echo json_encode([
+            "status" => "error",
             "message" => "Erro ao buscar dados.",
             "details" => $e->getMessage()
         ]);
+        http_response_code(500);
     }
 } else {
     // Resposta para método não permitido
-    http_response_code(405);
     echo json_encode([
+        "status" => "error",
         "message" => "Método não permitido."
     ]);
+    http_response_code(405);
 }
