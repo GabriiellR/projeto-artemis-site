@@ -60,8 +60,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($response_decode['response'])) {
             $response_content = $response_decode['response'];
             // Limita a resposta a 1200 caracteres
-            if (strlen($response_content) > 1200) {
-                $response_content = substr($response_content, 0, 1200) . '...'; // Trunca e adiciona "..."
+            if (strlen($response_content) > 900) {
+                $response_content = substr($response_content, 0, 900) . '...'; // Trunca e adiciona "..."
             }
 
             // Retorna a resposta em formato JSON
