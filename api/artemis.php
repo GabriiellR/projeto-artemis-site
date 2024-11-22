@@ -4,19 +4,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $URL = "http://localhost:11434/api/generate";
     $MODELO = "tinyllama";
 
+    // Obtém os dados do corpo da requisição
     $json_data = file_get_contents('php://input');
     $data_decode = json_decode($json_data, true);
 
     if (empty($data_decode['prompt'])) {
         http_response_code(400);
-        echo json_encode(["message" => "Bad Request: Prompt não pode estar vazio."]);
+        echo json_encode(["message" => "Bad Request: Prompt deve ser uma string não vazia."]);
         exit;
     }
 
     $data = [
         "model" => $MODELO,
         "prompt" => $data_decode['prompt'],
-        "stream" => false,
+        "stream" => true, // Stream habilitado
     ];
 
     try {
@@ -38,8 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Verifica o código de status HTTP da resposta
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($http_code !== 200) {
-            throw new Exception('HTTP code: ' . $http_code . '. Response: ' . $response);
+        if (!$success || $http_code !== 200) {
+            throw new Exception('HTTP code: ' . $http_code);
         }
 
         curl_close($ch);
